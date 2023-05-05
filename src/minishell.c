@@ -38,7 +38,7 @@ int
 	while (42)
 	{
 		signal(SIGINT, signal_ctrlc);
-		termios_change(falsa);
+		termios_change(false);
 		input = get_input();
 		if (input == NULL)
 		{
