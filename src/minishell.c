@@ -6,7 +6,7 @@
 /*   By: hece <hece@student.42kocaeli.com.tr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/04 15:09:04 by hece              #+#    #+#             */
-/*   Updated: 2023/05/04 23:06:21 by hece             ###   ########.tr       */
+/*   Updated: 2023/05/08 23:21:57 by hece             ###   ########.tr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,61 @@
 
 static inline char	*get_input(void);
 static inline void	process_input(char *input);
+
+/* 
+ * ----------------------------------------------------------------------------
+ * "signal" fonksiyonu, belirtilen sinyal numarası ile eşleşen sinyal
+ * işleyicisini ayarlar
+ * ----------------------------------------------------------------------------
+ * "SIGQUIT" sinyal numarası klavyeden çıkmayı (CTRL + \) temsil eder
+ * ve "SIG_IGN", sinyal işleyicisinin yoksayılması anlamına gelir.
+ * ----------------------------------------------------------------------------
+ * "env_init" fonksiyonu, çevre değişkenlerini ortama yükler
+ * ve "g_env" değişkenine değer atar
+ * ----------------------------------------------------------------------------
+ * "ERROR" değeri, bir hata durumunu temsil eder.
+ * ----------------------------------------------------------------------------
+ * Sonsuz bir döngü başlatılır
+ * ----------------------------------------------------------------------------
+ * "Signal" fonksiyonu, belirtilen sinyal numarası ile eşleşen
+ * sinyal işleyicisini ayarlar
+ * ----------------------------------------------------------------------------
+ * "SIGINT" sinyal numarası, CTRL + C ile çıkmayı temsil eder
+ * ve "signal_ctrlc" fonksiyonuna bağlı bir işleyici atar.
+ * ----------------------------------------------------------------------------
+ * "termios_change" fonksiyonu, terminal girdi/çıktısının
+ * değiştirilmesini sağlar
+ * ----------------------------------------------------------------------------
+ * "false" parametresi, terminal ayarlarının değiştirileceğini belirtir.
+ * ----------------------------------------------------------------------------
+ * "get_input" fonksiyonu, kullanıcı girdisini okur ve bir karakter dizisi
+ * olarak döndürür.
+ * ----------------------------------------------------------------------------
+ * Eğer "input" değeri "NULL" ise, programdan çıkılır.
+ * ----------------------------------------------------------------------------
+ * "isatty" fonksiyonu, belirtilen dosya tanımlayıcısının bir terminal cihazı
+ * olup olmadığını kontrol eder.
+ * ----------------------------------------------------------------------------
+ * "STDERR_FILENO", standart hata çıkışını temsil eder.
+ * ----------------------------------------------------------------------------
+ * "termios_change" fonksiyonu, terminal girdi/çıktısının
+ * değiştirilmesini sağlar
+ * ----------------------------------------------------------------------------
+ * "true" parametresi, terminal ayarlarının önceki hallerine
+ * geri döneceğini belirtir. Ve döngü kapatılır....
+ * ----------------------------------------------------------------------------
+ * "process_input" fonksiyonu, kullanıcı girdisini analiz eder ve uygun
+ * şekilde işlem yapar.
+ * ----------------------------------------------------------------------------
+ * "rl_clear_history" fonksiyonu,
+ * "readline kütüphanesinin" komut geçmişini temizler.
+ * ----------------------------------------------------------------------------
+ * "g_env" değişkeni varsa, bellekten temizlenir.
+ * ----------------------------------------------------------------------------
+ * "exec_exit_status_get" fonksiyonu,
+ * son işlem çıkış durumunu döndürür.
+ * ----------------------------------------------------------------------------
+ */
 
 char	**g_env = NULL;
 
@@ -59,6 +114,34 @@ int
  * user@computer:~$ == PS1 environment
  */
 
+/*
+ * ----------------------------------------------------------------------------
+ * "static inline" anahtar kelimeleri, bu fonksiyonun sadece bu dosya içinde
+ * kullanılacağını ve derleyici tarafından optimize edilebileceğini
+ * belirtir.
+ * ----------------------------------------------------------------------------
+ * "input" ve "prompt" adında iki karakter işaretçisi tanımlanıyor.
+ * ----------------------------------------------------------------------------
+ * "env_get_value" fonksiyonu, "PS1" adlı ortam değişkeninin değerini
+ * döndürür ve "prompt" işaretçisine atar.
+ * ----------------------------------------------------------------------------
+ * Eğer "prompt" işaretçisi "NULL" ise, "PROMPT" değeri atanır.
+ * ----------------------------------------------------------------------------
+ * Eğer standart giriş "(STDIN_FILENO)" terminalden alınıyorsa "(isatty)",
+ * "readline" fonksiyonu ile girdi alınır ve "input" işaretçisine atanır.
+ * ----------------------------------------------------------------------------
+ * Standart giriş terminalden alınmıyorsa, "minishell_get_next_line"
+ * fonksiyonu kullanılır.
+ * ----------------------------------------------------------------------------
+ * Eğer "input" işaretçisi NULL ise, NULL döndürülür.
+ * ----------------------------------------------------------------------------
+ * Eğer standart giriş terminalden alınıyorsa ve "input" NULL
+ * değilse ve "input" dizisi boş değilse, "input" dizisini geçmişe ekler.
+ * ----------------------------------------------------------------------------
+ * Fonksiyon, "input" işaretçisini döndürür.
+ * ----------------------------------------------------------------------------
+ */
+
 static inline char
 	*get_input(void)
 {
@@ -81,6 +164,38 @@ static inline char
 
 /*
  * signal(SIGINT, SIG_IGN); == you not use ctrl + c so not close process
+ */
+
+/*
+ * ----------------------------------------------------------------------------
+ * "l_token" ve "l_parser" adında iki bağlı liste işaretçisi
+ * tanımlanıyor.
+ * ----------------------------------------------------------------------------
+ * "signal" fonksiyonu, SIGINT sinyalini (ör. Ctrl+C) yoksayacak
+ * şekilde ayarlanır.
+ * ----------------------------------------------------------------------------
+ * "errno" değeri sıfırlanır, hataların takibi için kullanılır.
+ * ----------------------------------------------------------------------------
+ * "l_token" ve "l_parser" işaretçileri NULL ile başlatılır.
+ * ----------------------------------------------------------------------------
+ * "lexer" fonksiyonu, kullanıcıdan alınan girdiyi analiz eder ve girdiyi
+ * tanımlayıcılar (tokens) listesine dönüştürür.
+ * Bu liste "l_token" işaretçisine atanır.
+ * ----------------------------------------------------------------------------
+ * "input" işaretçisi serbest bırakılır, artık kullanılmayacak.
+ * ----------------------------------------------------------------------------
+ * Eğer "l_token" işaretçisi "NULL" değilse, "parser" fonksiyonu ile
+ * "l_token" listesi işlenir ve "l_parser" listesi oluşturulur.
+ * ----------------------------------------------------------------------------
+ * Eğer "l_token" ve "l_parser" işaretçileri "NULL" değilse,
+ * "exec_recursive" fonksiyonu çağrılır ve komutlar işlenir.
+ * ----------------------------------------------------------------------------
+ * Eğer "l_parser" işaretçisi "NULL" değilse, listeyi temizler ve
+ * kaynakları serbest bırakır.
+ * ----------------------------------------------------------------------------
+ * Eğer "l_token" işaretçisi "NULL" değilse ve "l_parser" "NULL" ise,
+ * "l_token" listesini temizler ve kaynakları serbest bırakır.
+ * ----------------------------------------------------------------------------
  */
 
 static inline void
